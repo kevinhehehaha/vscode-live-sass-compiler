@@ -1,6 +1,7 @@
-import { Helper, IFormat } from "./helper";
-import { OutputWindow } from "./VscodeExtensions";
-import { OutputLevel } from "./OutputLevel";
+import { SettingsHelper } from "./Helpers/SettingsHelper";
+import { IFormat } from "./Interfaces/IFormat";
+import { OutputWindow } from "./VsCode/OutputWindow";
+import { OutputLevel } from "./Enums/OutputLevel";
 import { workspace } from "vscode";
 import { existsSync } from "fs";
 import path from "path";
@@ -29,7 +30,7 @@ export class SassHelper {
             } else if (normalisedUrl.startsWith("/")) {
                 for (let i = 0; i < workspace.workspaceFolders.length; i++) {
                     const folder = workspace.workspaceFolders[i],
-                        rootIsWorkspace = Helper.getConfigSettings<boolean>(
+                        rootIsWorkspace = SettingsHelper.getConfigSettings<boolean>(
                             "rootIsWorkspace",
                             folder
                         );
@@ -196,9 +197,8 @@ export class SassHelper {
 
             do {
                 stringArray.push(
-                    `${lineNumber} |${
-                        span.context?.split("\n")[lineNumber - span.start.line] ??
-                        span.text.split("\n")[lineNumber - span.start.line]
+                    `${lineNumber} |${span.context?.split("\n")[lineNumber - span.start.line] ??
+                    span.text.split("\n")[lineNumber - span.start.line]
                     }`
                 );
 
