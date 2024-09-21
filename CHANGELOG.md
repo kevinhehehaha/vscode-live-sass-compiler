@@ -23,6 +23,30 @@ Types of changes
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Breaking Changes
+
+-   We have moved to the quicker `sass-embedded`. Closes [#327](https://github.com/glenn2223/vscode-live-sass-compiler/issues/327)  
+    This uses the latest compiler, but drops these settings:
+    -   `liveSassCompile.settings.formats[].linefeed`
+    -   `liveSassCompile.settings.formats[].indentType`
+    -   `liveSassCompile.settings.formats[].indentWidth`  
+        _Note: these 3 would've been dropped for SASS 2.0 anyway_
+    -   `liveSassCompile.settings.useNewCompiler`
+
+### Changed
+
+-   Switched from `sass@1.69.5` to `sass-embedded@1.79.3` - as mentioned above
+
+### Updated
+
+-   `autoprefixer` to `10.4.20` [Changelog][cl:fd]
+-   `fdir` to `6.3.0` [Changelog][cl:fd]
+-   `picomatch` to `4.0.2` [Changelog][cl:pm]
+-   `postcss` to `8.4.47` [Changelog][cl:pc]
+-   Various dev dependency updates _(nothing user facing)_
+
 ## [6.1.2] - 2023-11-22
 
 <small>[Compare to previous release][comp:6.1.2]</small>

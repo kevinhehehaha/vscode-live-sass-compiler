@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { OutputWindow } from "./VscodeExtensions";
-import { OutputLevel } from "./OutputLevel";
+import { OutputWindow } from "../VsCode/OutputWindow";
+import { OutputLevel } from "../Enums/OutputLevel";
 
 export interface IFileResolver {
     FileUri: string;

@@ -1,11 +1,13 @@
-import { Helper, IFormat } from "./helper";
-import { OutputWindow } from "./VscodeExtensions";
-import { OutputLevel } from "./OutputLevel";
+import { SettingsHelper } from "./SettingsHelper";
+import { IFormat } from "../Interfaces/IFormat";
+import { OutputWindow } from "../VsCode/OutputWindow";
+import { OutputLevel } from "../Enums/OutputLevel";
 import { workspace } from "vscode";
 import { existsSync } from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
-import * as compiler from "../node_modules/sass/sass.node";
+import { Logger, Options, SourceSpan, compileAsync } from "sass-embedded";
+import { ISassCompileResult } from "../Interfaces/ISassCompileResult";
 
 export class SassHelper {
     private static parsePath<T>(importUrl: string, cb: (newPath: string) => T): T | null {
@@ -29,7 +31,7 @@ export class SassHelper {
             } else if (normalisedUrl.startsWith("/")) {
                 for (let i = 0; i < workspace.workspaceFolders.length; i++) {
                     const folder = workspace.workspaceFolders[i],
-                        rootIsWorkspace = Helper.getConfigSettings<boolean>(
+                        rootIsWorkspace = SettingsHelper.getConfigSettings<boolean>(
                             "rootIsWorkspace",
                             folder
                         );
@@ -48,12 +50,12 @@ export class SassHelper {
         return null;
     }
 
-    private static readonly loggerProperty = {
+    private static readonly loggerProperty: Logger = {
         warn: (
             message: string,
             options: {
                 deprecation: boolean;
-                span?: compiler.SourceSpan;
+                span?: SourceSpan;
                 stack?: string;
             }
         ) => {
@@ -63,7 +65,7 @@ export class SassHelper {
                 [message].concat(this.format(options.span, options.stack, options.deprecation))
             );
         },
-        debug: (message: string, options: { span?: compiler.SourceSpan }) => {
+        debug: (message: string, options: { span?: SourceSpan }) => {
             OutputWindow.Show(
                 OutputLevel.Debug,
                 "Debug info:",
@@ -72,83 +74,44 @@ export class SassHelper {
         },
     };
 
-    static toSassOptions<T extends boolean>(
-        format: IFormat,
-        useNew: T
-    ): T extends true ? compiler.LegacyFileOptions<"sync"> : compiler.Options<"sync">;
-    static toSassOptions(
-        format: IFormat,
-        useNew: boolean
-    ): compiler.LegacyFileOptions<"sync"> | compiler.Options<"sync"> {
-        if (useNew) {
-            const options: compiler.Options<"sync"> = {
-                style: format.format,
-                importers: [
-                    {
-                        findFileUrl: (importUrl) =>
-                            SassHelper.parsePath(importUrl, (newPath) => pathToFileURL(newPath)),
-                    },
-                ],
-                logger: SassHelper.loggerProperty,
-                sourceMap: true,
-                sourceMapIncludeSources: true,
-            };
-
-            return options;
-        } else {
-            const legacyOptions: compiler.LegacyFileOptions<"sync"> = {
-                file: "",
-                outputStyle: format.format,
-                omitSourceMapUrl: true,
-                linefeed: format.linefeed,
-                indentType: format.indentType,
-                indentWidth: format.indentWidth,
-                importer: (importUrl) =>
-                    SassHelper.parsePath(importUrl, (newPath) => {
-                        return { file: newPath };
-                    }),
-                logger: SassHelper.loggerProperty,
-            };
-
-            return legacyOptions;
-        }
+    /**
+     * Converts the given format object to Sass options.
+     * @param format - The format object containing the desired options.
+     * @returns The Sass options object.
+     */
+    static toSassOptions(format: IFormat): Options<"async"> {
+        return {
+            style: format.format,
+            importers: [
+                {
+                    findFileUrl: (importUrl) =>
+                        SassHelper.parsePath(importUrl, (newPath) => pathToFileURL(newPath)),
+                },
+            ],
+            logger: SassHelper.loggerProperty,
+            sourceMap: true,
+            sourceMapIncludeSources: true,
+        };
     }
 
-    static compileOne(
+    /**
+     * Compiles a single Sass file asynchronously.
+     *
+     * @param SassPath - The path to the Sass file to compile.
+     * @param targetCssUri - The URI of the target CSS file.
+     * @param options - The options for the Sass compilation.
+     * @returns A promise that resolves to the Sass compile result.
+     */
+    static async compileOneAsync(
         SassPath: string,
         targetCssUri: string,
-        mapFileUri: string,
-        options: compiler.LegacyFileOptions<"sync"> | compiler.Options<"sync">
-    ): {
-        result: { css: string; map?: string } | null;
-        errorString: string | null;
-    } {
+        options: Options<"async">
+    ): Promise<ISassCompileResult> {
         try {
-            if ("file" in options) {
-                const data: compiler.LegacyFileOptions<"sync"> = { file: "" };
+            const { css, sourceMap } = await compileAsync(SassPath, options);
 
-                Object.assign(data, options);
-
-                data.file = SassPath;
-
-                data.outFile = targetCssUri;
-                data.sourceMap = mapFileUri;
-
-                const renderResult = compiler.renderSync(data);
-
-                return {
-                    result: {
-                        css: renderResult.css.toString(),
-                        map: renderResult.map?.toString(),
-                    },
-                    errorString: null,
-                };
-            }
-
-            const compileResult = compiler.compile(SassPath, options);
-
-            if (compileResult.sourceMap) {
-                compileResult.sourceMap.sources = compileResult.sourceMap.sources.map(
+            if (sourceMap) {
+                sourceMap.sources = sourceMap.sources.map(
                     (sourcePath) =>
                         path.relative(path.join(targetCssUri, "../"), fileURLToPath(sourcePath))
                 );
@@ -156,17 +119,15 @@ export class SassHelper {
 
             return {
                 result: {
-                    css: compileResult.css,
-                    map: compileResult.sourceMap
-                        ? JSON.stringify(compileResult.sourceMap)
+                    css: css,
+                    map: sourceMap
+                        ? JSON.stringify(sourceMap)
                         : undefined,
                 },
                 errorString: null,
             };
         } catch (err) {
-            if (this.instanceOfSassExcpetion(err)) {
-                return { result: null, errorString: err.formatted };
-            } else if (err instanceof Error) {
+            if (err instanceof Error) {
                 return { result: null, errorString: err.message };
             }
 
@@ -174,12 +135,8 @@ export class SassHelper {
         }
     }
 
-    private static instanceOfSassExcpetion(object: unknown): object is compiler.LegacyException {
-        return "formatted" in (object as compiler.LegacyException);
-    }
-
     private static format(
-        span: compiler.SourceSpan | undefined | null,
+        span: SourceSpan | undefined | null,
         stack?: string,
         deprecated?: boolean
     ): string[] {
@@ -196,9 +153,8 @@ export class SassHelper {
 
             do {
                 stringArray.push(
-                    `${lineNumber} |${
-                        span.context?.split("\n")[lineNumber - span.start.line] ??
-                        span.text.split("\n")[lineNumber - span.start.line]
+                    `${lineNumber} |${span.context?.split("\n")[lineNumber - span.start.line] ??
+                    span.text.split("\n")[lineNumber - span.start.line]
                     }`
                 );
 
@@ -238,7 +194,7 @@ export class SassHelper {
         return outString + (suffix ?? "");
     }
 
-    private static addUnderLine(span: compiler.SourceSpan): string {
+    private static addUnderLine(span: SourceSpan): string {
         let outString = "|";
 
         if (span.start.line !== span.end.line) {

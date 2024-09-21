@@ -14,6 +14,15 @@ export default {
             format: "cjs",
             sourcemap: false,
             compact: true,
+            plugins: [{
+                name: "navigtorFix",
+                renderChunk(code) {
+                    return {
+                        code: `var navigator=null!==navigator&&void 0!==navigator?navigator:navigator={userAgent:null};${code}`,
+                        map: null,
+                    };
+                },
+            }],
         },
     ],
     plugins: [
