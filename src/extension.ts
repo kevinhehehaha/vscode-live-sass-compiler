@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode";
 
-import { AppModel } from "./AppModel.1";
+import { AppModel } from "./appModel";
 import { checkNewAnnouncement } from "./announcement/index";
 import { OutputWindow } from "./VsCode/OutputWindow";
 import { ErrorLogger } from "./VsCode/ErrorLogger";

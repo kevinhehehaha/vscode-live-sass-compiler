@@ -17,18 +17,13 @@
 
 An array of formats. Allows you save to multiple locations, with a customisable format and extension for each
 
-| Properties                | Type                             | Default    | Notes                                                                |
-| ------------------------- | -------------------------------- | ---------- | -------------------------------------------------------------------- |
-| format                    | `expanded` OR `compressed`       | `expanded` | The output style of the generated file                               |
-| extensionName             | `string`                         | `.css`     | The extension suffix added to the output file (must end with `.css`) |
-| savePath                  | `string?`                        | `null`     | See [save path notes]                                                |
-| savePathReplacementPairs  | `Record<string, string>?`        | `null`     | See [save path notes]                                                |
-| generateMap               | `boolean?`                       | `null`     | Choose to output maps at a format level instead                      |
-| <sup>Ŧ</sup>_linefeed_    | `cr` OR `crlf` OR `lf` OR `lfcr` | `lf`       | The linefeed terminator to use                                       |
-| <sup>Ŧ</sup>_indentType_  | `space` OR `tab`                 | `space`    | The indentation to use for the `expanded` format                     |
-| <sup>Ŧ</sup>_indentWidth_ | `number`                         | `2`        | The indentation width used for the `expanded` format                 |
-
-<small><sup>Ŧ</sup> These will be removed in SASS v2.0 and are currently unavailable when `liveSassCompile.settings.useNewCompiler` is `true`</small>
+| Properties               | Type                       | Default    | Notes                                                                |
+| ------------------------ | -------------------------- | ---------- | -------------------------------------------------------------------- |
+| format                   | `expanded` OR `compressed` | `expanded` | The output style of the generated file                               |
+| extensionName            | `string`                   | `.css`     | The extension suffix added to the output file (must end with `.css`) |
+| savePath                 | `string?`                  | `null`     | See [save path notes]                                                |
+| savePathReplacementPairs | `Record<string, string>?`  | `null`     | See [save path notes]                                                |
+| generateMap              | `boolean?`                 | `null`     | Choose to output maps at a format level instead                      |
 
 <details>
 <summary>Examples</summary>
@@ -308,24 +303,6 @@ No SASS/SCSS files outside of this folder will be watched/compiled when you save
 > ℹ This setting can vary between workspace folders - [read more][multi-rootfaq]
 
 Tells the compiler that a leading slash is relative to the workspace root rather than the drive root.
-
-**Type:** `boolean`  
-**Default:** `false`
-
----
-
-## liveSassCompile.settings.useNewCompiler
-
-> ℹ This setting can vary between workspace folders - [read more][multi-rootfaq]
-
-SASS have introduced a new entry point in their JS API. This new API is designed to be more performant than the old one. Go on, kick the tyres on this new entry point (before it comes mandatory in SASS 2.0).
-
-> **Warning**  
-> This method does not apply any of the following settings (and never will <sup>[[ref]](https://github.com/sass/dart-sass/issues/1585#issuecomment-1005184692)</sup>)
->
-> -   `liveSassCompile.settings.formats[].linefeed`
-> -   `liveSassCompile.settings.formats[].indentType`
-> -   `liveSassCompile.settings.formats[].indentWidth`
 
 **Type:** `boolean`  
 **Default:** `false`

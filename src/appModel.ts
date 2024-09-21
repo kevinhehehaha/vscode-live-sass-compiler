@@ -7,7 +7,7 @@ import { FileHelper, IFileResolver } from "./Helpers/FileHelper";
 import { SettingsHelper } from "./Helpers/SettingsHelper";
 import { IFormat } from "./Interfaces/IFormat";
 import { fdir } from "fdir";
-import { SassHelper } from "./SassCompileHelper";
+import { SassHelper } from "./Helpers/SassHelper";
 import { StatusBarUi } from "./VsCode/StatusbarUi";
 import { OutputLevel } from "./Enums/OutputLevel";
 import { SassConfirmationType } from "./Enums/SassConfirmationType";
@@ -17,7 +17,6 @@ import { ErrorLogger } from "./VsCode/ErrorLogger";
 import BrowserslistError from "browserslist/error";
 import fs from "fs";
 import picomatch from "picomatch";
-import { LegacyFileOptions, Options } from "sass";
 import { autoprefix } from "./Helpers/Autoprefix";
 
 export class AppModel {
@@ -341,47 +340,22 @@ export class AppModel {
         const formats = SettingsHelper.getConfigSettings<IFormat[]>(
             "formats",
             workspaceFolder
-        ),
-            useCompile = SettingsHelper.getConfigSettings<boolean>(
-                "useNewCompiler",
-                workspaceFolder
-            ),
-            paths = await Promise.all(
-                formats.map((format, index) => {
-                    OutputWindow.Show(
-                        OutputLevel.Trace,
-                        `Starting format ${index + 1} of ${formats.length}`,
-                        [`Settings: ${JSON.stringify(format)}`]
-                    );
+        );
+        
+        return await Promise.all(
+            formats.map(async (format, index) => {
+                OutputWindow.Show(
+                    OutputLevel.Trace,
+                    `Starting format ${index + 1} of ${formats.length}`,
+                    [`Settings: ${JSON.stringify(format)}`]
+                );
 
-                    // Each format
-                    const options = this.getSassOptions(format, useCompile);
-                    return {
-                        options,
-                        pathData: this.generateCssAndMapUri(
-                            sassPath,
-                            format,
-                            workspaceFolder
-                        ),
-                        generateMap: format.generateMap,
-                    };
-                })
-            );
-
-        return Promise.all(
-            paths.map(async data => {
-                var result = await data.pathData
-
-                return result ?
-                    this.GenerateCssAndMap(
-                        workspaceFolder,
-                        sassPath,
-                        result.css,
-                        result.map,
-                        data.options,
-                        data.generateMap
-                    )
-                    : false;
+                // Each format
+                return await this.GenerateCssAndMap(
+                    workspaceFolder,
+                    sassPath,
+                    format
+                );
             })
         );
     }
@@ -399,13 +373,6 @@ export class AppModel {
         }
     }
 
-    private getSassOptions(
-        format: IFormat,
-        useNew: boolean
-    ): LegacyFileOptions<"sync"> | Options<"sync"> {
-        return SassHelper.toSassOptions(format, useNew);
-    }
-
     /**
      * To Generate one One Css & Map file from Sass/Scss
      * @param sassPath Sass/Scss file URI (string)
@@ -416,23 +383,27 @@ export class AppModel {
     private async GenerateCssAndMap(
         folder: vscode.WorkspaceFolder | undefined,
         sassPath: string,
-        targetCssUri: string,
-        mapFileUri: string,
-        options: LegacyFileOptions<"sync"> | Options<"sync">,
-        formatGenerateMap: boolean | undefined
+        format: IFormat
     ) {
         OutputWindow.Show(OutputLevel.Trace, "Starting compilation", [
             "Starting compilation of file",
             `Path: ${sassPath}`,
         ]);
+        
+        const paths = this.generateCssAndMapUri(sassPath, format, folder);
+
+        if (paths === null) {
+            return false;
+        }
+
+        const options = SassHelper.toSassOptions(format);
 
         const generateMap =
-            formatGenerateMap ??
+            format.generateMap ??
             SettingsHelper.getConfigSettings<boolean>("generateMap", folder),
-            compileResult = SassHelper.compileOne(
+            compileResult = await SassHelper.compileOneAsync(
                 sassPath,
-                targetCssUri,
-                mapFileUri,
+                paths.css,
                 options
             ),
             promises: Promise<IFileResolver>[] = [];
@@ -477,7 +448,7 @@ export class AppModel {
                     folder,
                     css,
                     map,
-                    targetCssUri,
+                    paths.css,
                     autoprefixerTarget,
                     generateMap
                 );
@@ -498,12 +469,12 @@ export class AppModel {
         }
 
         if (map && generateMap) {
-            css += `/*# sourceMappingURL=${path.basename(targetCssUri)}.map */`;
+            css += `/*# sourceMappingURL=${path.basename(paths.map)} */`;
 
-            promises.push(FileHelper.writeToOneFile(mapFileUri, map));
+            promises.push(FileHelper.writeToOneFile(paths.map, map));
         }
 
-        promises.push(FileHelper.writeToOneFile(targetCssUri, css));
+        promises.push(FileHelper.writeToOneFile(paths.css, css));
 
         const fileResolvers = await Promise.all(promises);
 
@@ -570,7 +541,7 @@ export class AppModel {
      * Generate a full save path for the final css & map files
      * @param filePath The path to the current SASS file
      */
-    private async generateCssAndMapUri(
+    private generateCssAndMapUri(
         filePath: string,
         format: IFormat,
         workspaceRoot?: vscode.WorkspaceFolder
