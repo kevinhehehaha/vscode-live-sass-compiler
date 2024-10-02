@@ -1,14 +1,13 @@
 import {
     env,
     extensions,
-    Memento,
-    OutputChannel,
-    Uri,
-    version,
-    window,
+    Memento, Uri,
+    version
 } from "vscode";
-import { Helper } from "./helper";
-import { OutputLevel } from "./OutputLevel";
+import { LogEvent } from "./LogEvent";
+import { OutputWindow } from "./OutputWindow";
+import { WindowPopout } from "./WindowPopout";
+import { OutputLevel } from "../Enums/OutputLevel";
 
 const _errorLogPath = "liveSassCompiler.ErrorInfo";
 
@@ -71,10 +70,8 @@ export class ErrorLogger {
                 `| VS Code | v${version} |`,
                 `| Platform | ${process.platform} ${process.arch} |`,
                 `| Node | ${process.versions.node} (${process.versions.modules}) |`,
-                `| Live Sass | ${
-                    extensions.getExtension("glenn2223.live-sass")!.packageJSON
-                        .version
-                } |`,
+                `| Live Sass | ${extensions.getExtension("glenn2223.live-sass")!.packageJSON
+                    .version} |`,
                 `<details><summary>Installed Extensions</summary><div>`,
                 extensions.all
                     .filter((ext) => ext.isActive)
@@ -82,11 +79,9 @@ export class ErrorLogger {
                     .join("<br/>"),
                 "</div></details>",
                 "",
-                `**LOG**: ${
-                    lastError === null
-                        ? ""
-                        : lastError.createdAt.toISOString().replace("T", " ")
-                }`,
+                `**LOG**: ${lastError === null
+                    ? ""
+                    : lastError.createdAt.toISOString().replace("T", " ")}`,
                 "```JSON",
                 lastError === null
                     ? '{\n"NO LOG": "PLEASE SPECIFY YOUR ISSUE BELOW"\n}'
@@ -105,10 +100,8 @@ export class ErrorLogger {
         await env.openExternal(
             Uri.parse(
                 "https://github.com/glenn2223/vscode-live-sass-compiler/issues/new" +
-                    `?title=${
-                        lastError === null ? "Issue+Report" : "Unexpected+Error"
-                    }%3A+SUMMARY+HERE` +
-                    "&body=%3C%21--+Highlight+this+line+and+then+paste+(Ctrl+%2B+V+%7C+Command+%2B+V)+--%3E"
+                `?title=${lastError === null ? "Issue+Report" : "Unexpected+Error"}%3A+SUMMARY+HERE` +
+                "&body=%3C%21--+Highlight+this+line+and+then+paste+(Ctrl+%2B+V+%7C+Command+%2B+V)+--%3E"
             )
         );
 
@@ -135,78 +128,5 @@ export class ErrorLogger {
         );
 
         return JSON.parse(JSON.stringify(Err, Object.getOwnPropertyNames(Err)));
-    }
-}
-
-class LogEvent {
-    public createdAt: Date;
-    public event: unknown;
-
-    constructor(event: unknown) {
-        this.createdAt = new Date();
-        this.event = event;
-    }
-}
-
-export class OutputWindow {
-    private static _msgChannel: OutputChannel;
-
-    private static get MsgChannel() {
-        if (!OutputWindow._msgChannel) {
-            OutputWindow._msgChannel =
-                window.createOutputChannel("Live Sass Compile");
-        }
-
-        return OutputWindow._msgChannel;
-    }
-
-    static Show(
-        outputLevel: OutputLevel,
-        msgHeadline: string | null,
-        msgBody?: string[] | null,
-        addEndLine = true
-    ): void {
-        const userLogLevel = Helper.getOutputLogLevel();
-
-        if (
-            outputLevel >= userLogLevel ||
-            outputLevel === OutputLevel.Critical
-        ) {
-            OutputWindow.MsgChannel.show(true);
-        }
-
-        if (outputLevel >= userLogLevel || outputLevel > OutputLevel.Debug) {
-            if (msgHeadline) {
-                OutputWindow.MsgChannel.appendLine(msgHeadline);
-            }
-
-            if (msgBody) {
-                msgBody.forEach((msg) => {
-                    OutputWindow.MsgChannel.appendLine(msg);
-                });
-            }
-
-            if (addEndLine) {
-                OutputWindow.MsgChannel.appendLine("--------------------");
-            }
-        }
-    }
-
-    static dispose(): void {
-        this.MsgChannel.dispose();
-    }
-}
-
-export class WindowPopout {
-    static Inform(message: string): void {
-        window.showInformationMessage(message);
-    }
-
-    static Warn(message: string): void {
-        window.showWarningMessage(message);
-    }
-
-    static Alert(message: string): void {
-        window.showErrorMessage(message);
     }
 }

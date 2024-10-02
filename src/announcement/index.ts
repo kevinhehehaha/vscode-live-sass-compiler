@@ -1,14 +1,14 @@
 import { Memento, extensions, window, commands, Uri } from "vscode";
-import { Helper } from "../helper";
-import { OutputWindow } from "../VscodeExtensions";
-import { OutputLevel } from "../OutputLevel";
+import { SettingsHelper } from "../Helpers/SettingsHelper";
+import { OutputWindow } from "../VsCode/OutputWindow";
+import { OutputLevel } from "../Enums/OutputLevel";
 
 const SETUP_STRING = "liveSassCompiler.setup.version";
 
 export async function checkNewAnnouncement(memento: Memento): Promise<void> {
     OutputWindow.Show(OutputLevel.Trace, "Call to check for new announcement");
 
-    const showAnnoucement = Helper.getConfigSettings<boolean>("showAnnouncements");
+    const showAnnoucement = SettingsHelper.getConfigSettings<boolean>("showAnnouncements");
 
     OutputWindow.Show(OutputLevel.Trace, "Checking `showAnnouncements` setting");
 
