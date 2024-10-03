@@ -18,6 +18,7 @@ Here's some of the most important changes:
 
 -   We now require VS Code version 1.74
 -   We are no longer dependant on `ritwickdey.LiveServer`. You can manually add this package to VS Code, if you need it
+-   We are using a quicker type of SASS
 -   Some settings have been changed
     -   `formats[]`:
         -   `format` only accepts `compressed` or `expanded`
@@ -31,18 +32,15 @@ Here's some of the most important changes:
     -   `formats[]`:
         -   `savePathReplacementPairs`: replace segments in the output path
         -   `generateMap`: generate map files at a format level (overwriting the top-tier setting of the same name)
-        -   `linefeed`: control the line terminator used
-        -   `indentType`: control whether indents are spaces or tabs
-        -   `indentWidth`: control the width of the indentation
     -   `watchOnLaunch`: state whether you want to watch files upon launch
     -   `compileOnWatch`: state if files should be compiled upon watching
     -   `forceBaseDirectory`: state the base directory of all you SASS files. Aids in reducing wasted resources while searching for files
     -   `partialsList`: specify what files are actually partials (or which folders contain them)
-    -   `useNewCompiler`: use the latest version of the JS SASS compiler. It's quicker, and addresses some issues; but mainly, IT'S QUICKER!
 
 Here are some things you probably won't care about as much
 
 -   The extension has had a massive overhaul. Performance optimisation, and new features!
+-   The quicker SASS package is `sass-embedded`. This utilises DartSass directly - rather than a JS interpreted version
 -   We abandoned `glob` (the package, not the patterns) and we now use `fdir` which is blazingly fast
 -   New commands!
     -   `liveSass.command.compileCurrentSass`: perform a one-time compilation of the current SASS file
@@ -79,7 +77,10 @@ Open the `settings.json` file and type following key-value pairs. _By the way, y
             "savePath": "/dist/css"
         }
     ],
-    "liveSassCompile.settings.excludeList": ["**/node_modules/**", ".vscode/**"],
+    "liveSassCompile.settings.excludeList": [
+        "**/node_modules/**",
+        ".vscode/**"
+    ],
     "liveSassCompile.settings.generateMap": true,
     "liveSassCompile.settings.autoprefix": ["defaults"]
 }

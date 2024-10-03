@@ -163,39 +163,6 @@
                                     "null"
                                 ],
                                 "default": null
-                            },
-                            "linefeed": {
-                                "description": "Choose the linefeed terminator to use in the CSS output",
-                                "type": "string",
-                                "enum": [
-                                    "cr",
-                                    "crlf",
-                                    "lf",
-                                    "lfcr"
-                                ],
-                                "default": "lf",
-                                "markdownDeprecationMessage": "**BEWARE**: This setting will be removed in [sass v2.0](https://github.com/sass/dart-sass/issues/1585)",
-                                "deprecationMessage": "BEWARE: This setting will be removed in sass v2.0"
-                            },
-                            "indentType": {
-                                "description": "Choose the indent type to use in the CSS ouput (for `expanded` formats only)",
-                                "type": "string",
-                                "enum": [
-                                    "space",
-                                    "tab"
-                                ],
-                                "default": "space",
-                                "markdownDeprecationMessage": "**BEWARE**: This setting will be removed in [sass v2.0](https://github.com/sass/dart-sass/issues/1585)",
-                                "deprecationMessage": "BEWARE: This setting will be removed in sass v2.0"
-                            },
-                            "indentWidth": {
-                                "description": "Choose the indent width to use in the CSS ouput (for `expanded` formats only)",
-                                "type": "number",
-                                "default": 2,
-                                "minimum": 0,
-                                "maximum": 10,
-                                "markdownDeprecationMessage": "**BEWARE**: This setting will be removed in [sass v2.0](https://github.com/sass/dart-sass/issues/1585)",
-                                "deprecationMessage": "BEWARE: This setting will be removed in sass v2.0"
                             }
                         },
                         "additionalProperties": false,
@@ -254,14 +221,6 @@
                     ],
                     "default": true,
                     "description": "Set to `false` if you don't want a `.map` file for each compiled CSS.\nDefault is `true`",
-                    "scope": "resource"
-                },
-                "liveSassCompile.settings.useNewCompiler": {
-                    "type": [
-                        "boolean"
-                    ],
-                    "default": false,
-                    "description": "Set to `true` to use new SASS's new `compile` function. It's more performant!",
                     "scope": "resource"
                 },
                 "liveSassCompile.settings.autoprefix": {
@@ -353,29 +312,29 @@
         "rollup": "rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript"
     },
     "dependencies": {
-        "autoprefixer": "^10.4.16",
-        "fdir": "^6.1.1",
-        "picomatch": "^3.0.1",
-        "postcss": "^8.4.31",
-        "sass": "^1.69.5"
+        "autoprefixer": "^10.4.20",
+        "fdir": "^6.3.0",
+        "picomatch": "^4.0.2",
+        "postcss": "^8.4.47",
+        "sass-embedded": "^1.79.3"
     },
     "devDependencies": {
-        "@rollup/plugin-commonjs": "^25.0.7",
-        "@rollup/plugin-json": "^6.0.1",
+        "@rollup/plugin-commonjs": "^26.0.1",
+        "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-terser": "^0.4.4",
-        "@rollup/plugin-typescript": "^11.1.5",
-        "@types/mocha": "^10.0.6",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "@types/mocha": "^10.0.8",
         "@types/node": "^17.0.45",
-        "@types/picomatch": "^2.3.3",
+        "@types/picomatch": "^3.0.1",
         "@types/vscode": "1.74",
-        "@typescript-eslint/eslint-plugin": "^6.12.0",
-        "@typescript-eslint/parser": "^6.12.0",
-        "eslint": "^8.54.0",
-        "mocha": "^10.2.0",
-        "rollup": "^3.29.4",
-        "tslib": "^2.6.2",
-        "typescript": "^5.3.2",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "eslint": "^8.57.1",
+        "mocha": "^10.7.3",
+        "rollup": "^4.22.4",
+        "tslib": "^2.7.0",
+        "typescript": "^5.6.2",
         "vscode-test": "^1.6.1"
     },
     "announcement": {

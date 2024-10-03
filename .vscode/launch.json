@@ -7,10 +7,13 @@
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-            "stopOnEntry": false,
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}"
+            ],
             "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/out/src/**/*.js"],
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ],
             "preLaunchTask": "pack"
         },
         {
@@ -23,9 +26,10 @@
                 "--extensionTestsPath=${workspaceRoot}/out/test/index",
                 "./assets/"
             ],
-            "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/out/test/**/*.js"],
+            "outFiles": [
+                "${workspaceRoot}/out/test/**/*.js"
+            ],
             "preLaunchTask": "npm: pretest"
         }
     ]

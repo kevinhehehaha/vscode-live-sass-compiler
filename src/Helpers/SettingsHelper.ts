@@ -1,18 +1,7 @@
 import * as vscode from "vscode";
-import { OutputLevel } from "./OutputLevel";
+import { OutputLevel } from "../Enums/OutputLevel";
 
-export interface IFormat {
-    format: "compressed" | "expanded";
-    extensionName: string;
-    savePath?: string;
-    savePathReplacementPairs?: Record<string, unknown>;
-    generateMap?: boolean;
-    linefeed: "cr" | "crlf" | "lf" | "lfcr";
-    indentType: "space" | "tab";
-    indentWidth: number;
-}
-
-export class Helper {
+export class SettingsHelper {
     private static configSettings(folder?: vscode.WorkspaceFolder) {
         return vscode.workspace.getConfiguration("liveSassCompile.settings", folder);
     }
